@@ -1,4 +1,4 @@
-require '01_sql_object'
+require 'sql_object'
 require 'db_connection'
 require 'securerandom'
 
@@ -200,7 +200,6 @@ describe SQLObject do
       end
 
       it 'creates a new record with the correct values' do
-        # pull the cat again
         cat2 = Cat.find(cat.id)
 
         expect(cat2.name).to eq('Gizmo')
@@ -216,7 +215,6 @@ describe SQLObject do
         human.lname = 'von Rubens'
         human.update
 
-        # pull the human again
         human = Human.find(2)
         expect(human.fname).to eq('Matthew')
         expect(human.lname).to eq('von Rubens')
