@@ -133,6 +133,20 @@ class SQLObject
     SQL
   end
 
+  def destroy
+    cols = self.class.columns.drop(1)
+    vals = self.attribute_values.drop(1)
+    column_names = cols.map { |name| "#{name} = ?" }.join(', ')
+
+    DBConnection.execute(<<-SQL, *vals, self.id)
+      DELETE
+      FROM
+        #{self.class.table_name}
+      WHERE
+        id = ?
+    SQL
+  end
+
   def save
     self.id.nil? ? self.insert : self.update
   end
