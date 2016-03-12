@@ -21,9 +21,9 @@ end
 class BelongsToOptions < AssocOptions
   def initialize(name, options = {})
     defaults = {
-      :foreign_key => "#{name}_id".to_sym,
-      :class_name => name.to_s.camelcase,
-      :primary_key => :id
+      foreign_key: "#{name}_id".to_sym,
+      class_name: name.to_s.camelcase,
+      primary_key: :id
     }
 
     defaults.keys.each do |key|
@@ -35,9 +35,9 @@ end
 class HasManyOptions < AssocOptions
   def initialize(name, self_class_name, options = {})
     defaults = {
-      :foreign_key => "#{self_class_name.underscore}_id".to_sym,
-      :class_name => name.to_s.singularize.camelcase,
-      :primary_key => :id
+      foreign_key: "#{self_class_name.underscore}_id".to_sym,
+      class_name: name.to_s.singularize.camelcase,
+      primary_key: :id
     }
 
     defaults.keys.each do |key|
