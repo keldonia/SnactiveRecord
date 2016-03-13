@@ -39,6 +39,6 @@ describe 'Searchable' do
   end
 
   it '#where returns [] if nothing matches the criteria' do
-    expect(Human.where(fname: 'Nowhere', lname: 'Man')).to eq([])
+    expect(Human.where(fname: 'Nowhere', lname: 'Man').send(:to_a)).to eq([])
   end
 end

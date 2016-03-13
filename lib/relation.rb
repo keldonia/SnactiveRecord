@@ -112,6 +112,7 @@ class SQLRelation
   def load_includes(relation)
     includes_params.each do |param|
       if relation.klass.has_association?(param)
+        p relation
         puts "LOADING #{param.to_s}"
         assoc = klass.assoc_options[param]
         f_k = assoc.foreign_key

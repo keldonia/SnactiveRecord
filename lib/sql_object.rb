@@ -80,8 +80,13 @@ class SQLObject
     relation
   end
 
-  def self.hash_association?(association)
+  def self.has_association?(association)
     assoc_options.keys.include?(association)
+  end
+
+  def self.define_singleton_method_by_proc(onj, name, block)
+    metaclass = class << obj; self; end
+    metaclass.send(:define_method, name, block)
   end
 
   def self.find(id)
