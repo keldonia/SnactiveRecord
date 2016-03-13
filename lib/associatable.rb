@@ -1,4 +1,3 @@
-require_relative 'searchable'
 require 'active_support/inflector'
 require 'active_support/core_ext/string'
 
@@ -70,9 +69,11 @@ module Associatable
       options = self.class.assoc_options[name]
 
       key_val = self.send(options.primary_key)
+
       options
         .model_class
         .where(options.foreign_key => key_val)
+        .to_a
     end
   end
 
@@ -91,20 +92,12 @@ module Associatable
        source_fk = source_options.foreign_key
 
        key_val = self.send(through_fk)
-       results = DBConnection.execute(<<-SQL, key_val)
-         SELECT
-           #{source_table}.*
-         FROM
-           #{through_table}
-         JOIN
-           #{source_table}
-         ON
-           #{through_table}.#{source_fk} = #{source_table}.#{source_pk}
-         WHERE
-           #{through_table}.#{through_pk} = ?
-       SQL
 
-       source_options.model_class.parse_all(results).first
+       source_options
+        .model_class
+        .includes(through_name)
+        .where(through_pk => key_val)
+        .first
     end
   end
 
@@ -124,70 +117,18 @@ module Associatable
        source_fk = source_options.foreign_key
 
        key_val = self.send(through_fk)
-       results = DBConnection.execute(<<-SQL, key_val)
-         SELECT
-           #{source_table}.*
-         FROM
-           #{through_table}
-         JOIN
-           #{source_table}
-         ON
-           #{through_table}.#{through_fk} = #{source_table}.#{source_pk}
-         WHERE
-           #{through_table}.#{through_pk} = ?
-       SQL
 
        through_options.model_class.parse_all(results)
+
+       through_name
+        .model_class
+        .where(through_fk => key_val)
+        .includes(source_name)
+        .load
+        .included_relations
+        .first
+        .to_a
     end
-
-  end
-
-  def includes(association)
-
-    self_table = self.table_name
-    self_id = "#{self.class_name}_id"
-    association_table = table.table_name
-
-    results = DBConnection.execute(<<-SQL)
-
-      SELECT
-        *
-      FROM
-        #{self_table}
-      JOIN
-        #{association_table}
-      ON
-        #{self_table}.id = #{association_table}.#{self_id}
-      WHERE
-        #{association_table}.#{self_id} = #{self.id}
-
-    SQL
-
-    self.model_class.parse_all(results)
-
-  end
-
-  def joins(table)
-
-    self_table = self.table_name
-    self_id = "#{self.class_name}_id"
-    join_table = table.table_name
-
-    results = DBConnection.execute(<<-SQL)
-
-      SELECT
-        *
-      FROM
-        #{self_table}
-      JOIN
-        #{join_table}
-      ON
-        #{self_table}.id = #{join_table}.#{self_id}
-
-    SQL
-
-    self.model_class.parse_all(results)
-
   end
 
   def assoc_options
@@ -195,9 +136,4 @@ module Associatable
     @assoc_options ||= {}
     @assoc_options
   end
-end
-
-class SQLObject
-
-  extend Associatable
 end

@@ -1,9 +1,23 @@
 require_relative 'db_connection'
 require 'active_support/inflector'
 require 'active_support/core_ext/string'
+require_relative 'associatable'
+require_relative 'relation'
 
 
 class SQLObject
+  extend Associatable
+
+  RELATION_METHODS = [
+    :limit, :includes, :where, :order
+  ]
+
+  RELATION_METHODS.each do |method|
+    define_singleton_method(method) do |arg|
+      SQLRelation.new(klass: self).send(method, arg)
+    end
+  end
+
   def self.columns
 
     if @columns.nil?
@@ -30,52 +44,48 @@ class SQLObject
       define_method("#{column}") do
         attributes[column]
       end
-
     end
-
   end
 
   def self.table_name=(table_name)
-
     @table_name = table_name
   end
 
   def self.table_name
-
     @table_name.nil? ? @table_name = self.to_s.pluralize.tableize : @table_name
   end
 
   def self.all
+    where({})
+  end
 
-    collection = DBConnection.execute(<<-SQL)
-      SELECT
-        *
-      FROM
-        #{self.table_name}
-    SQL
+  def self.count
+    all.count
+  end
 
-    self.parse_all(collection)
+  def self.first
+    all.limit(1).first
+  end
 
+  def self.last
+    all.order(id: :desc).limit(1).first
   end
 
   def self.parse_all(results)
+    relation = SQLRelation.new(klass: self, loaded: true)
+    results.each do |result|
+      relation << self.new(result)
+    end
 
-    results.map { |obj_vars| self.new(obj_vars) }
+    relation
+  end
 
+  def self.hash_association?(association)
+    assoc_options.keys.include?(association)
   end
 
   def self.find(id)
-
-    obj_vars = DBConnection.execute(<<-SQL, id: id).first
-      SELECT
-        *
-      FROM
-        #{self.table_name}
-      WHERE
-        id = :id
-    SQL
-
-    obj_vars.nil? ? nil : self.new(obj_vars)
+    where(id: id).first
   end
 
   def initialize(params = {})
