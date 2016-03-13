@@ -149,7 +149,7 @@ class SQLObject
   end
 
   def destroy
-    vals = self.attribute_values.drop(1)
+    if self.class.find(id)
 
     DBConnection.execute(<<-SQL, *vals, self.id)
       DELETE
@@ -158,6 +158,8 @@ class SQLObject
       WHERE
         id = ?
     SQL
+
+    return self
   end
 
   def save
