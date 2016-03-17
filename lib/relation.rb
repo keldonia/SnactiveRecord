@@ -39,7 +39,8 @@ class SQLRelation
     end
   end
 
-  attr_reader :klass, :collection, :loaded, :sql_count, :sql_limit, :uniq, :sql_avg
+  attr_reader :klass, :collection, :loaded, :sql_count, :sql_limit, :uniq,
+    :sql_avg, :sql_min, :sql_max
   attr_accessor :included_relations
 
   def initialize(options)
@@ -62,6 +63,16 @@ class SQLRelation
 
   def count
     @sql_count = true
+    load
+  end
+
+  def minimum(column)
+    @sql_min = column
+    load
+  end
+
+  def maximum(column)
+    @sql_max = column
     load
   end
 
@@ -121,6 +132,8 @@ class SQLRelation
       select_statement = uniq ? "DISTINCT #{self.table_name.to_s}.*" : "#{self.table_name.to_s}.*"
       select_statement = sql_count ? "COUNT(select_statement)" : select_statement
       select_statement = sql_avg ? "AVG(sql_avg)" : select_statement
+      select_statement = sql_min ? "MIN(sql_min)" : select_statement
+      select_statement = sql_max ? "MAX(sql_max)" : select_statement
       puts "LOADING #{table_name}"
       results = DBConnection.execute(<<-SQL, sql_params[:values])
         SELECT
