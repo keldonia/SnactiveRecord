@@ -89,6 +89,7 @@ class SQLRelation
   end
 
   def joins(relation)
+    load
     p joins
     puts "LOADING #{relation.to_s}"
     assoc = klass.assoc_options[param]
