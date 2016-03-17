@@ -71,6 +71,10 @@ class SQLObject
     all.order(id: :desc).limit(1).first
   end
 
+  def self.uniq
+    all.uniq
+  end
+
   def self.parse_all(results)
     relation = SQLRelation.new(klass: self, loaded: true)
     results.each do |result|

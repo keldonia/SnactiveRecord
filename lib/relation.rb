@@ -39,7 +39,7 @@ class SQLRelation
     end
   end
 
-  attr_reader :klass, :collection, :loaded, :sql_count, :sql_limit
+  attr_reader :klass, :collection, :loaded, :sql_count, :sql_limit, :uniq
   attr_accessor :included_relations
 
   def initialize(options)
@@ -65,6 +65,10 @@ class SQLRelation
     load
   end
 
+  def uniq
+    @distinct = true
+  end
+
   def included_relations
     @included_relations ||= []
   end
@@ -88,6 +92,7 @@ class SQLRelation
       puts "LOADING #{table_name}"
       results = DBConnection.execute(<<-SQL, sql_params[:values])
         SELECT
+          #{ uniq ? DISTINCT : "" }
           #{ sql_count ? "COUNT(*)" : self.table_name.to_s + ".*" }
         FROM
           #{ self.table_name }
