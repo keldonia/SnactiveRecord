@@ -113,11 +113,12 @@ class SQLRelation
 
   def load
     if !loaded
+      select_statement = uniq ? "DISTINCT #{self.table_name.to_s}.*" : "#{self.table_name.to_s}.*"
+      select_statement = sql_count ? "COUNT(select_statement)" : select_statement
       puts "LOADING #{table_name}"
       results = DBConnection.execute(<<-SQL, sql_params[:values])
         SELECT
-          #{ uniq ? DISTINCT : "" }
-          #{ sql_count ? "COUNT(*)" : self.table_name.to_s + ".*" }
+          #{ select_statement }
         FROM
           #{ self.table_name }
           #{ sql_params[:where] }
