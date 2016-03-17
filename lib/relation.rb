@@ -67,6 +67,7 @@ class SQLRelation
 
   def uniq
     @distinct = true
+    load
   end
 
   def included_relations
