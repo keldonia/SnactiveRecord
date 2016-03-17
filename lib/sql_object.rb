@@ -63,6 +63,10 @@ class SQLObject
     all.count
   end
 
+  def self.average
+    all.average
+  end
+
   def self.first
     all.limit(1).first
   end

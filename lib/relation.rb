@@ -39,7 +39,7 @@ class SQLRelation
     end
   end
 
-  attr_reader :klass, :collection, :loaded, :sql_count, :sql_limit, :uniq
+  attr_reader :klass, :collection, :loaded, :sql_count, :sql_limit, :uniq, :sql_avg
   attr_accessor :included_relations
 
   def initialize(options)
@@ -62,6 +62,11 @@ class SQLRelation
 
   def count
     @sql_count = true
+    load
+  end
+
+  def average(column)
+    @sql_avg = column
     load
   end
 
@@ -115,6 +120,7 @@ class SQLRelation
     if !loaded
       select_statement = uniq ? "DISTINCT #{self.table_name.to_s}.*" : "#{self.table_name.to_s}.*"
       select_statement = sql_count ? "COUNT(select_statement)" : select_statement
+      select_statement = sql_avg ? "AVG(sql_avg)" : select_statement
       puts "LOADING #{table_name}"
       results = DBConnection.execute(<<-SQL, sql_params[:values])
         SELECT
